@@ -1,0 +1,88 @@
+name: Facebook Data Deletion Package Tests
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/facebook-data-deletion-package-tests.yml'
+      - 'composer.json'
+      - 'composer.lock'
+      - 'phpunit.xml'
+      - 'config/**'
+      - 'database/**'
+      - 'resources/**'
+      - 'routes/**'
+      - 'src/**'
+      - 'tests/**'
+  pull_request:
+    paths:
+      - '.github/workflows/facebook-data-deletion-package-tests.yml'
+      - 'composer.json'
+      - 'composer.lock'
+      - 'phpunit.xml'
+      - 'config/**'
+      - 'database/**'
+      - 'resources/**'
+      - 'routes/**'
+      - 'src/**'
+      - 'tests/**'
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php: '8.2'
+            laravel: '^11.0'
+            testbench: '^9.0'
+          - php: '8.3'
+            laravel: '^12.0'
+            testbench: '^10.0'
+          - php: '8.4'
+            laravel: '^12.0'
+            testbench: '^10.0'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: composer:v2
+          extensions: dom, mbstring, pdo_sqlite, sqlite3
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer downloads
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-php-${{ matrix.php }}-facebook-data-deletion-${{ hashFiles('composer.json') }}
+          restore-keys: |
+            ${{ runner.os }}-php-${{ matrix.php }}-facebook-data-deletion-
+
+      - name: Pin Laravel and Testbench versions for matrix run
+        run: |
+          composer require --no-interaction --no-update \
+            "illuminate/contracts:${{ matrix.laravel }}" \
+            "illuminate/database:${{ matrix.laravel }}" \
+            "illuminate/http:${{ matrix.laravel }}" \
+            "illuminate/queue:${{ matrix.laravel }}" \
+            "illuminate/routing:${{ matrix.laravel }}" \
+            "illuminate/support:${{ matrix.laravel }}" \
+            "illuminate/view:${{ matrix.laravel }}"
+          composer require --dev --no-interaction --no-update "orchestra/testbench:${{ matrix.testbench }}"
+
+      - name: Install package dependencies
+        run: composer update --prefer-dist --no-interaction
+
+      - name: Run package tests
+        run: composer test
+
