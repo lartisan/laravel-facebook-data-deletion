@@ -1,9 +1,11 @@
 # Laravel Facebook Data Deletion
 
+<div align="center" class="filament-hidden">
 [![Downloads](https://img.shields.io/packagist/dt/lartisan/laravel-facebook-data-deletion.svg?style=flat-square)](https://packagist.org/packages/lartisan/laravel-facebook-data-deletion/stats)
 [![Tests](https://img.shields.io/github/actions/workflow/status/lartisan/laravel-facebook-data-deletion/facebook-data-deletion-package-tests.yml?branch=main&style=flat-square&label=tests)](https://github.com/lartisan/laravel-facebook-data-deletion/actions)
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/lartisan/laravel-facebook-data-deletion.svg?style=flat-square)](https://packagist.org/packages/lartisan/laravel-facebook-data-deletion)
 [![License](https://img.shields.io/packagist/l/lartisan/laravel-facebook-data-deletion.svg?style=flat-square)](https://github.com/lartisan/laravel-facebook-data-deletion/blob/main/LICENSE)
+</div>
 
 A Laravel package that automates Meta / Facebook **Data Deletion Request** callbacks through a secure webhook.
 
