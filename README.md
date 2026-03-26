@@ -84,14 +84,18 @@ FACEBOOK_DATA_DELETION_QUEUE=facebook-data-deletion
 
 ### Default configuration
 
+After publishing the config, open `config/facebook-data-deletion.php` and point `resolver` and `deletion_handler` to the two classes you will create in the next steps:
+
 ```php
 return [
     'app_secret' => env('FACEBOOK_APP_SECRET', env('FACEBOOK_SECRET')),
 
     'model' => Lartisan\FacebookDataDeletion\Models\FacebookDataDeletionRequest::class,
 
+    // 👇 Replace with your own resolver class (see "Configuring the User model" below)
     'resolver' => App\Facebook\FacebookDeletionSubjectResolver::class,
 
+    // 👇 Replace with your own deletion handler class (see "Configuring the deletion strategy" below)
     'deletion_handler' => App\Facebook\DeleteFacebookSubjectData::class,
 
     'queue' => [
@@ -112,9 +116,20 @@ return [
 ];
 ```
 
+> **How the config wires everything together**
+>
+> The package reads these two class names at runtime and binds them to their contracts via Laravel's service container. You never call these classes directly — they are automatically injected by the framework:
+>
+> - `resolver` → injected into the package's controller to look up the subject model from the Meta App-Scoped ID.
+> - `deletion_handler` → injected into the `ProcessFacebookDataDeletionRequest` job to carry out the actual deletion or anonymization.
+>
+> All you need to do is create the two classes described below and set their fully-qualified class names in this config file.
+
 ### Configuring the User model and Facebook ID field
 
 The package does not hardcode a user model or a `facebook_id` column. Instead, you configure a resolver class that knows how to map the Meta App-Scoped ID to the model you want to delete or anonymize.
+
+#### Step 1 — Create the resolver class
 
 #### Example: direct `facebook_id` column on `users`
 
@@ -160,9 +175,18 @@ class FacebookDeletionSubjectResolver implements ResolvesFacebookDeletionSubject
 }
 ```
 
+#### Step 2 — Register it in the config
+
+```php
+// config/facebook-data-deletion.php
+'resolver' => App\Facebook\FacebookDeletionSubjectResolver::class,
+```
+
 ### Configuring the deletion strategy
 
 Your application controls how data is deleted or anonymized by implementing the deletion handler contract.
+
+#### Step 1 — Create the deletion handler class
 
 ```php
 namespace App\Facebook;
@@ -192,6 +216,13 @@ class DeleteFacebookSubjectData implements DeletesFacebookDeletionSubjectData
         });
     }
 }
+```
+
+#### Step 2 — Register it in the config
+
+```php
+// config/facebook-data-deletion.php
+'deletion_handler' => App\Facebook\DeleteFacebookSubjectData::class,
 ```
 
 ## Usage
